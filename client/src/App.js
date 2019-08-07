@@ -1,33 +1,56 @@
-import React, { Component } from 'react';
-import GoogleMapReact from 'google-map-react';
+import React, { Component, Fragment } from 'react';
+import isEmpty from 'lodash.isempty';
+import styled from 'styled-components';
+
+import Marker from './components/Marker';
+import GoogleMap from './components/GoogleMap';
 import HAIFA_PORT from './consts/haifa_port';
 
-const AnyReactComponent = ({ text }) => <div>{text}</div>;
-const API_KEY = "AIzaSyDulrR4TYXf5MncVDZgzZmNB_2ZlEsVrVY";
+const Wrapper = styled.section`
+  width: 100vw;
+  height: 100vh;
+`;
 
-class SimpleMap extends Component {
-  static defaultProps = {
-    zoom: 14
-  };
+class Main extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      places: [],
+    };
+  }
+
+  componentDidMount() {
+    fetch('places.json')
+      .then(response => response.json())
+      .then(data => this.setState({ places: data.results }));
+  }
 
   render() {
+    const { places } = this.state;
     return (
-      // Important! Always set the container height explicitly
-      <div style={{ height: '100vh', width: '100%' }}>
-        <GoogleMapReact
-          bootstrapURLKeys={{ key: API_KEY }}
-          defaultCenter={HAIFA_PORT}
-          defaultZoom={this.props.zoom}
-        >
-          <AnyReactComponent
-            lat={59.955413}
-            lng={30.337844}
-            text="My Marker"
-          />
-        </GoogleMapReact>
-      </div>
+      <Wrapper>
+        <Fragment>
+          {!isEmpty(places) && (
+            <GoogleMap
+              defaultZoom={11}
+              defaultCenter={HAIFA_PORT}
+            >
+              {places.map(place => (
+                <Marker
+                  key={place.id}
+                  text={place.name}
+                  lat={place.geometry.location.lat}
+                  lng={place.geometry.location.lng}
+                  image={place.icon}
+                />
+              ))}
+            </GoogleMap>
+          )}
+        </Fragment>
+      </Wrapper>
     );
   }
 }
 
-export default SimpleMap;
+export default Main;
