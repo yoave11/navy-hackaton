@@ -30,7 +30,7 @@ const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((r
             reject(err)
         }
         if (highWaterOffset && offset == (highWaterOffset - 1)) {
-            resolve({ snapshot, offset })
+            resolve({ timestamps, snapshot })
         }
         const v = JSON.parse(value)
         const timestamp = v.kinematicTime
@@ -42,7 +42,6 @@ const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((r
         }
 
         if (timestamp <= t2 && timestamp >= t1) {
-            console.log(JSON.stringify(timestamp))
             timestamps[JSON.stringify(timestamp)] = v
         }
 
@@ -58,7 +57,6 @@ const calculateInitialSnapshot = async (t1, t2) => {
     const value = JSON.parse(await getObject(snapshotKey))
     if (!value)
         return {}
-    console.log(Object.keys(value))
     return promisfySnapshotCalculation(t1, t2, value.snapshot, value.offset)
 }
 
