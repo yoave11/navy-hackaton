@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
-
+process.setMaxListeners(0);
 // view engine setup
 
 app.use(logger('dev'));

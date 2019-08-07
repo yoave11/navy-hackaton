@@ -13,6 +13,11 @@ const recordHandler = ({ value, offset }) => {
         if (!lastTimestamp) {
             lastTimestamp = v.kinematicTime
         }
+
+        if (offset === 0) {
+            redisClient.set('firstTimestamp', lastTimestamp);
+        }
+
         currentTimestamp = v.kinematicTime
         if (currentTimestamp > (lastTimestamp + interval)) {
             const date = new Date(0); // The 0 there is the key, which sets the date to the epoch
