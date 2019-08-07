@@ -10,7 +10,8 @@
 			"icon": "https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png",
 			"id": "1113d3dd7339f965caae39387dd808a9e877bc2e",
 			"name": "A"
-		},{
+		},
+		{
 			"geometry": {
 				"location": {
 					"lat": 32.84,
@@ -20,7 +21,8 @@
 			"icon": "https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png",
 			"id": "1113d3dd7339f965caae39387dd808a9e877bc2a",
 			"name": "B"
-		},{
+		},
+		{
 			"geometry": {
 				"location": {
 					"lat": 32.88,

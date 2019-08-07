@@ -1,1 +1,0 @@
-export default [32.82, 35.0];

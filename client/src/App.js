@@ -5,9 +5,8 @@ import axios from 'axios';
 
 import Marker from './components/Marker';
 import GoogleMap from './components/GoogleMap';
-import HAIFA_PORT from './consts/haifa_port';
+import { PLAYBACK_SERVICE_URL_TEST, PLAYBACK_SERVICE_URL, HAIFA_PORT } from './consts/env';
 
-const url = 'https://httpbin.org/get';
 const Wrapper = styled.section`
   width: 100vw;
   height: 100vh;
@@ -29,20 +28,23 @@ class Main extends Component {
   }
 
   componentWillMount() {
-    this.getDataAxios()
+    this.getDataTest()
+    // this.getData()
   }
 
-  async getDataAxios() {
-    const response =
-      await axios.get(url,
-        {
-          params: {
-            start: '123456789',
-            end: '123456789'
-          }
+  async getDataTest() {
+    await axios.get(PLAYBACK_SERVICE_URL_TEST)
+  }
+
+  async getData() {
+    await axios.get(PLAYBACK_SERVICE_URL,
+      {
+        params: {
+          t1: '1466400700',
+          t2: '1466480900'
         }
-      )
-    console.log(response.data)
+      }
+    )
   }
 
   render() {
