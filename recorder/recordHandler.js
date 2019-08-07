@@ -3,26 +3,27 @@ let lastTimestamp = null
 let currentTimestamp = null
 const redis = require("redis"),
     redisClient = redis.createClient();
-const interval = process.env.INTERVAL || 1000
+const interval = process.env.INTERVAL || 10000
 let lastOffset = 0
 
 
-const recordHandler = ({ value, offset, key }) => {
+const recordHandler = ({ value, offset }) => {
     try {
         const v = JSON.parse(value)
         if (!lastTimestamp) {
-            lastTimestamp = v.timestamp
+            lastTimestamp = v.kinematicTime
         }
-        currentTimestamp = v.timestamp
+        currentTimestamp = v.kinematicTime
         if (currentTimestamp > (lastTimestamp + interval)) {
-            console.log(`setting timestamp ${new Date(lastTimestamp)} to redis`) 
+            const date = new Date(0); // The 0 there is the key, which sets the date to the epoch
+            date.setUTCSeconds(lastTimestamp);
+            console.log(`setting timestamp ${date} to redis`)
             redisClient.set(JSON.stringify(lastTimestamp), JSON.stringify({ snapshot: allEntities, offset: lastOffset }));
             lastOffset = offset
             lastTimestamp = interval + lastTimestamp
         }
-
         allEntities.push({
-            uuid: v.uuid,
+            id: v.key,
             value: v
         })
 
