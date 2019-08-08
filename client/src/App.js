@@ -63,7 +63,6 @@ class Main extends Component {
                   text={place.name}
                   lat={place.geometry.location.lat}
                   lng={place.geometry.location.lng}
-                  image={place.icon}
                 />
               ))}
             </GoogleMap>

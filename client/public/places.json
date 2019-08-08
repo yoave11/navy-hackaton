@@ -7,7 +7,6 @@
 					"lng": 35.01
 				}
 			},
-			"icon": "https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png",
 			"id": "1113d3dd7339f965caae39387dd808a9e877bc2e",
 			"name": "A"
 		},
@@ -18,7 +17,6 @@
 					"lng": 35.04
 				}
 			},
-			"icon": "https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png",
 			"id": "1113d3dd7339f965caae39387dd808a9e877bc2a",
 			"name": "B"
 		},
@@ -29,7 +27,6 @@
 					"lng": 35.09
 				}
 			},
-			"icon": "https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png",
 			"id": "1113d3dd7339f965caae39387dd808a9e877bc2b",
 			"name": "C"
 		}
