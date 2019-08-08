@@ -1,13 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import isEmpty from 'lodash.isempty';
 import styled from 'styled-components';
-import axios from 'axios';
 import { PlayerIcon } from 'react-player-controls'
 
-
+import Parser from './Parser'
 import Marker from './components/Marker';
 import GoogleMap from './components/GoogleMap';
-import { PLAYBACK_SERVICE_URL_TEST, PLAYBACK_SERVICE_URL, HAIFA_PORT } from './consts/env';
+import { HAIFA_PORT } from './consts/env';
 
 const Wrapper = styled.section`
   width: 100vw;
@@ -39,23 +38,7 @@ class Main extends Component {
   }
 
   componentWillMount() {
-    this.getDataTest()
-    // this.getData()
-  }
-
-  async getDataTest() {
-    await axios.get(PLAYBACK_SERVICE_URL_TEST)
-  }
-
-  async getData() {
-    await axios.get(PLAYBACK_SERVICE_URL,
-      {
-        params: {
-          t1: '1466400700',
-          t2: '1466480900'
-        }
-      }
-    )
+    Parser.getDataTest();
   }
 
   render() {
