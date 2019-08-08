@@ -42,7 +42,10 @@ const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((r
         }
 
         if (timestamp <= t2 && timestamp >= t1) {
-            timestamps[JSON.stringify(timestamp)] = v
+            if (!timestamps[JSON.stringify(timestamp)]) {
+                timestamps[JSON.stringify(timestamp)] = []
+            }
+            timestamps[JSON.stringify(timestamp)].push(v)
         }
 
         if (timestamp > t2) {
