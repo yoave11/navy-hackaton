@@ -12,7 +12,6 @@ const Wrapper = styled.img`
 
 const Marker = props => (
   <Wrapper
-    alt={props.text}
     src={'boat-icon.png'}
   />
 );

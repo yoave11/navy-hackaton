@@ -27,14 +27,15 @@ class Main extends Component {
     super(props);
 
     this.state = {
-      places: [],
+      timestamps: [],
+      snapshot: []
     };
   }
 
   componentDidMount() {
-    fetch('places.json')
+    fetch('data.json')
       .then(response => response.json())
-      .then(data => this.setState({ places: data.results }));
+      .then(data => this.setState({ timestamps: data.timestamps, snapshot: data.snapshot }));
   }
 
   componentWillMount() {
@@ -58,22 +59,28 @@ class Main extends Component {
   }
 
   render() {
-    const { places } = this.state;
+    const { timestamps, snapshot } = this.state;
     return (
       <Fragment>
         <Wrapper>
           <Fragment>
-            {!isEmpty(places) && (
+            {(!isEmpty(timestamps) || !isEmpty(snapshot)) && (
               <GoogleMap
                 defaultZoom={11}
                 defaultCenter={HAIFA_PORT}
               >
-                {places.map(place => (
+                {/* {timestamps.map(timestamp => (
                   <Marker
-                    key={place.id}
-                    text={place.name}
-                    lat={place.geometry.location.lat}
-                    lng={place.geometry.location.lng}
+                    key={timestamp.id}
+                    lat={timestamp.lat}
+                    lng={timestamp.lng}
+                  />
+                ))} */}
+                {snapshot.map(snap => (
+                  <Marker
+                    key={snap.id}
+                    lat={snap.value.lat}
+                    lng={snap.value.lon}
                   />
                 ))}
               </GoogleMap>
