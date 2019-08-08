@@ -1,8 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Wrapper = styled.img`
-  /* position: absolute; */
+const ImageMarker = styled.img`
   width: 15px;
   height: 15px;
   &:hover {
@@ -10,10 +9,20 @@ const Wrapper = styled.img`
   }
 `;
 
+const SimpleMarker = styled.div`
+  width: 15px;
+  height: 15px;
+  background-color: black;
+  border: 1px solid white;
+  border-radius: 100%;
+  &:hover {
+    z-index: 1;
+  }
+`;
+
 const Marker = props => (
-  <Wrapper
-    src={'boat-icon.png'}
-  />
+  <SimpleMarker />
+  // <ImageMarker src={'boat-icon.png'} />
 );
 
 export default Marker;
