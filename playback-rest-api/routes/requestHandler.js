@@ -23,6 +23,7 @@ const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((r
     console.log(`Reading from offset ${offset}`)
     consumer.setOffset('updates', 0, offset)
     let timestamps = {}
+    let entities = {}
     consumer.on('message', ({ value, offset, highWaterOffset }, err) => {
         if (err) {
             console.log(err)
@@ -30,10 +31,24 @@ const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((r
             reject(err)
         }
         if (highWaterOffset && offset == (highWaterOffset - 1)) {
-            resolve({ timestamps, snapshot })
+            resolve({ entities, snapshot, })
         }
         const v = JSON.parse(value)
         const timestamp = v.kinematicTime
+
+        if (!entities[v.key]) {
+            entities[v.key] = {
+                position: {
+                    epoch: timestamp,
+                    cartesian: []
+                }
+            }
+        }
+        entities[v.key].position.cartesian.push(
+            timestamp - entities[v.key].position.epoch, v.lat, v.lon, 0
+        )
+
+
         if (timestamp <= t1) {
             snapshot.push({
                 id: v.key,
@@ -49,7 +64,7 @@ const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((r
         }
 
         if (timestamp > t2) {
-            resolve({ timestamps, snapshot })
+            resolve({ entities, snapshot, })
         }
 
     })
