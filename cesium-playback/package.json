@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server --progress",
-    "start2": "webpack-dev-server --config webpack.config.2.js --progress",
+    "start": "webpack-dev-server --config webpack.config.2.js --progress",
     "test": "eslint .",
     "build": "webpack --mode production",
     "build2": "webpack --config webpack.config.2.js --mode production"
