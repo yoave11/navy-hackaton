@@ -2,6 +2,7 @@ const redis = require("redis"),
     redisClient = redis.createClient();
 let firstTimestamp = null
 const { promisify } = require('util')
+const czml = require('czml-writer')
 const getObject = promisify(redisClient.get).bind(redisClient)
 const interval = process.env.INTERVAL || 10000
 
@@ -18,6 +19,38 @@ const consumer = new Consumer(
         autoCommit: false
     }
 );
+
+var orbit = new czml.orbit.fromParams({
+    apogee: 426.9, // km
+    perigee: 416.2, // km
+    inclination: 51.65, // deg
+    rightAscension: 304.1, // deg
+    argumentOfPeriapsis: 117.8 // deg 
+});
+var output = orbit.czml();
+delete output[1].path
+console.log(output)
+const createShob = ({entities}) => {
+    console.log('fuck')
+    console.log(Object.keys(entities))
+
+    const s = Object.keys(entities).map(k => {
+        let o = { ...JSON.parse(JSON.stringify(output[1])) }
+        // delete o.availability
+        o.id = k
+        o.label.text = k
+        o.position.cartographicDegrees = entities[k].position.cartesian
+        delete o.position.cartesian
+        // o.position.epoch = new Date(data.entities[k].position.epoch).toISOString()
+
+        return o
+    })
+    s.unshift({
+        ...output[0],
+    })
+    return s
+}
+
 
 const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((resolve, reject) => {
     console.log(`Reading from offset ${offset}`)
@@ -83,8 +116,7 @@ const requestHandler = async ({ t1, t2 }) => {
         firstTimestamp = await getObject('firstTimestamp')
     }
     const res = await calculateInitialSnapshot(t1, t2)
-    console.log(res.timestamps ? res.timestamps : 0)
-    return res
+    return createShob(res)
 }
 
 module.exports = requestHandler
