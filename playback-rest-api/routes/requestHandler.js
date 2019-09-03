@@ -30,18 +30,13 @@ var orbit = new czml.orbit.fromParams({
 var output = orbit.czml();
 delete output[1].path
 console.log(output)
-const createShob = ({entities}) => {
-    console.log('fuck')
-    console.log(Object.keys(entities))
-
+const createShob = ({ entities }) => {
     const s = Object.keys(entities).map(k => {
         let o = { ...JSON.parse(JSON.stringify(output[1])) }
-        // delete o.availability
         o.id = k
         o.label.text = k
         o.position.cartographicDegrees = entities[k].position.cartesian
         delete o.position.cartesian
-        // o.position.epoch = new Date(data.entities[k].position.epoch).toISOString()
 
         return o
     })
