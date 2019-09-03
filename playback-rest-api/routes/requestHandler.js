@@ -29,10 +29,8 @@ var orbit = new czml.orbit.fromParams({
 });
 var output = orbit.czml();
 delete output[1].path
-console.log(output)
-const createShob = ({entities}) => {
-    console.log('fuck')
-    console.log(Object.keys(entities))
+console.log(output[0])
+const createShob = (entities) => {
 
     const s = Object.keys(entities).map(k => {
         let o = { ...JSON.parse(JSON.stringify(output[1])) }
@@ -41,46 +39,82 @@ const createShob = ({entities}) => {
         o.label.text = k
         o.position.cartographicDegrees = entities[k].position.cartesian
         delete o.position.cartesian
-        // o.position.epoch = new Date(data.entities[k].position.epoch).toISOString()
+        o.availability = '1970-01-17T23:00:00.000Z/1970-01-17T23:59:56.194Z'
+        // console.log(entities[k].position)
+        // console.log(new Date(entities[k].position.epoch).toISOString())
+        o.position.epoch = new Date(entities[k].position.epoch).toISOString()
+        // console.log(new Date(entities[k].position.epoch).toISOString())
+        // delete o.position.epoch
 
         return o
     })
-    s.unshift({
-        ...output[0],
-    })
+    // s.unshift({
+    //     ...output[0],
+    // })
     return s
 }
+const snapshotToCzml = (snapshot, timestamp) => snapshot.map(({ id, value }) => ({
+    id,
+    position: {
+        epoch: timestamp,
+        // cartesian: [new Date(timestamp).toISOString(), value.lat, value.lon, 0],
+        cartesian: [0, value.lat, value.lon, 0]
 
+    },
+})).reduce((all, curr) => ({ ...all, [curr.id]: curr }), {})
 
-const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((resolve, reject) => {
+const promisfySnapshotCalculation = (t1, t2, snapshot, offset, resp) => new Promise((resolve, reject) => {
     console.log(`Reading from offset ${offset}`)
     consumer.setOffset('updates', 0, offset)
-    let timestamps = {}
     let entities = {}
+    let snapshotSent = false
+    const maxToSend = 500
+    let numberOfMessages = 0
     consumer.on('message', ({ value, offset, highWaterOffset }, err) => {
         if (err) {
             console.log(err)
 
             reject(err)
         }
+
+        if (snapshotSent) {
+            numberOfMessages += 1
+        }
+
         if (highWaterOffset && offset == (highWaterOffset - 1)) {
-            resolve({ entities, snapshot, })
+            const a = createShob(entities)
+            a.forEach(d => {
+                // resp.write('id: ' + d.id + '\n');
+                resp.write('data:' + JSON.stringify(d) + '\n\n'); // Note the extra newline
+            })
+            resolve()
         }
         const v = JSON.parse(value)
         const timestamp = v.kinematicTime
-
-        if (!entities[v.key]) {
-            entities[v.key] = {
-                position: {
-                    epoch: timestamp,
-                    cartesian: []
+        if (timestamp > t1) {
+            if (!entities[v.key]) {
+                entities[v.key] = {
+                    position: {
+                        epoch: timestamp,
+                        cartesian: []
+                    }
                 }
             }
-        }
-        entities[v.key].position.cartesian.push(
-            timestamp - entities[v.key].position.epoch, v.lat, v.lon, 0
-        )
+            entities[v.key].position.cartesian.push(
+                timestamp - entities[v.key].position.epoch, v.lat, v.lon, 0
+                // new Date(timestamp).toISOString(), v.lat, v.lon, 0
+                // new Date().toISOString(), v.lat, v.lon, 0
 
+
+            )
+        }
+
+        if (timestamp > t1 && !snapshotSent) {
+            snapshotSent = true
+            console.log('sending snapshot')
+            const a = createShob(snapshotToCzml(snapshot, timestamp))
+            sendToEventStream(a, resp)
+        }
 
         if (timestamp <= t1) {
             snapshot.push({
@@ -89,34 +123,45 @@ const promisfySnapshotCalculation = (t1, t2, snapshot, offset) => new Promise((r
             })
         }
 
-        if (timestamp <= t2 && timestamp >= t1) {
-            if (!timestamps[JSON.stringify(timestamp)]) {
-                timestamps[JSON.stringify(timestamp)] = []
-            }
-            timestamps[JSON.stringify(timestamp)].push(v)
+        if (timestamp > t2) {
+            const a = createShob(entities)
+            sendToEventStream(a,resp)
+            resolve()
         }
 
-        if (timestamp > t2) {
-            resolve({ entities, snapshot, })
+        if (snapshotSent && numberOfMessages >= maxToSend) {
+            // console.log('sending entities')
+            // console.log(Object.keys(entities).length )
+
+            const a = createShob(entities)
+            sendToEventStream(a,resp)
+            entities = {}
+            numberOfMessages = 0
         }
 
     })
 });
 
-const calculateInitialSnapshot = async (t1, t2) => {
+const sendToEventStream = (a, resp) => a.forEach(d => {
+    resp.write('id: ' + d.id + '\n');
+    resp.write('data:' + JSON.stringify(d) + '\n\n'); // Note the extra newline
+})
+
+const calculateInitialSnapshot = async (t1, t2, resp) => {
     const snapshotKey = Number(Math.floor((t1 - firstTimestamp) / interval)) * interval + Number(firstTimestamp)
     const value = JSON.parse(await getObject(snapshotKey))
     if (!value)
         return {}
-    return promisfySnapshotCalculation(t1, t2, value.snapshot, value.offset)
+    return promisfySnapshotCalculation(t1, t2, value.snapshot, value.offset, resp)
 }
 
-const requestHandler = async ({ t1, t2 }) => {
+const requestHandler = async ({ t1, t2 }, resp) => {
     if (!firstTimestamp) {
         firstTimestamp = await getObject('firstTimestamp')
     }
-    const res = await calculateInitialSnapshot(t1, t2)
-    return createShob(res)
+    const res = await calculateInitialSnapshot(t1, t2, resp)
+    return
+    // return createShob(res.entities)
 }
 
 module.exports = requestHandler
